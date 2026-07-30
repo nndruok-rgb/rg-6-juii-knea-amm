@@ -1,1 +1,0 @@
-# rg-6-juii-knea-amm
